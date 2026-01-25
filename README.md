@@ -8,10 +8,10 @@ It uses the [`html5-qrcode`](https://github.com/mebjas/html5-qrcode) library via
 
 ## Features
 
-- 📷 Uses the device camera (rear camera preferred) to scan QR codes  
-- ✅ Shows a full-screen overlay with the scanned data  
-- 🟦 **Confirm** sends the scanned text to your webhook via `fetch()` (POST, `text/plain`)  
-- ❌ **Cancel** closes the overlay and resumes scanning  
+- 📷 Uses the device camera (rear camera preferred) to scan QR codes
+- ✅ Shows a full-screen overlay with the scanned data
+- 🟦 **Confirm** sends the scanned text to your webhook via `fetch()` (POST, `application/json`)
+- ❌ **Cancel** closes the overlay and resumes scanning
 - ⏸️ Pauses scanning while the overlay is visible (camera stays on)
 
 ---
@@ -20,11 +20,22 @@ It uses the [`html5-qrcode`](https://github.com/mebjas/html5-qrcode) library via
 
 1. The scanner starts automatically when the page loads.
 2. When a QR code is detected:
-   - The decoded text is shown in a confirmation overlay.
-   - Scanning is paused to prevent duplicate reads.
+    - The decoded text is shown in a confirmation overlay.
+    - Scanning is paused to prevent duplicate reads.
 3. User action:
-   - **Confirm** → sends the scanned text to the webhook endpoint and resumes scanning.
-   - **Cancel** → dismisses the overlay and resumes scanning.
+    - **Confirm** → sends the scanned text to the webhook endpoint and resumes scanning.
+    - **Cancel** → dismisses the overlay and resumes scanning.
+
+---
+
+## Query params
+
+- `endpoint` (required): webhook URL to POST to
+- Any other params are forwarded and appended to the webhook URL
+
+Example:
+
+https://loqode.github.io/Glide-QR-Scanner?endpoint=https://example.com/webhook&rowid=12345
 
 ---
 
@@ -41,6 +52,7 @@ This is the base URL you will embed inside Glide.
 ### 2) Create a Glide workflow with a Webhook trigger
 
 In Glide:
+
 - Create a new workflow
 - Add a **Webhook** trigger
 - Copy the generated **Webhook URL**
@@ -69,5 +81,5 @@ Paste the constructed URL into a **Web Embed** component in the Glide Layout Edi
 
 - The camera scans a QR code
 - The scanned value is shown for confirmation
-- When **Confirm** is pressed, the QR text is sent as the **request body** to the Glide webhook
+- When **Confirm** is pressed, the QR text is sent as JSON in the **request body** to the Glide webhook
 - The scanner then resumes automatically
