@@ -28,16 +28,46 @@ It uses the [`html5-qrcode`](https://github.com/mebjas/html5-qrcode) library via
 
 ---
 
-## Usage
+## Usage (Glide)
 
-### 1) Open the app URL
+### 1) Copy the QR Scanner app URL
 
-Host or open the HTML file in a browser (HTTPS or `localhost` required for camera access).
+https://loqode.github.io/Glide-QR-Scanner
 
-### 2) Specify your webhook endpoint
+This is the base URL you will embed inside Glide.
 
-Pass your webhook URL using the `endpoint` query parameter:
+---
 
-https://your-site.com/index.html?endpoint=https://example.com/webhook
+### 2) Create a Glide workflow with a Webhook trigger
 
-When **Confirm** is pressed, the scanned QR text is sent as the request body to that URL.
+In Glide:
+- Create a new workflow
+- Add a **Webhook** trigger
+- Copy the generated **Webhook URL**
+
+This webhook will receive the scanned QR text.
+
+---
+
+### 3) Append the Glide webhook to the scanner URL
+
+In Glide, use a **Construct URL**, **Template**, or dynamic value to append the webhook URL as the `endpoint` query parameter.
+
+Example:
+
+https://loqode.github.io/Glide-QR-Scanner?endpoint=https://GLIDE-WORKFLOW-WEBHOOK.com/etc
+
+---
+
+### 4) Use the constructed URL in a Web Embed component
+
+Paste the constructed URL into a **Web Embed** component in the Glide Layout Editor.
+
+---
+
+### What happens on scan
+
+- The camera scans a QR code
+- The scanned value is shown for confirmation
+- When **Confirm** is pressed, the QR text is sent as the **request body** to the Glide webhook
+- The scanner then resumes automatically
