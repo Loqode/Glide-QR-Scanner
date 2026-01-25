@@ -55,7 +55,7 @@ In Glide, use a **Construct URL**, **Template**, or dynamic value to append the 
 
 Example:
 
-https://loqode.github.io/Glide-QR-Scanner?endpoint=https://GLIDE-WORKFLOW-WEBHOOK.com/etc
+https://loqode.github.io/Glide-QR-Scanner?endpoint=https://go.glideapps.com/api/container/plugin/webhook-trigger/ABC/12345
 
 ---
 
