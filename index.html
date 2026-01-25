@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Minimal QR Scanner + Confirm</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+      #reader {
+        width: 300px;
+        height: 300px;
+      }
+      /* Simple full-screen overlay */
+      #overlay {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+      }
+      #overlayCard {
+        background: white;
+        padding: 16px;
+        border-radius: 10px;
+        width: min(90vw, 420px);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      }
+      #overlayData {
+        margin: 12px 0;
+        padding: 10px;
+        background: #f3f3f3;
+        border-radius: 8px;
+        word-break: break-word;
+      }
+      #overlayActions {
+        display: flex;
+        gap: 8px;
+      }
+      #overlayActions button {
+        flex: 1;
+      }
+      #confirmBtn {
+        padding: 10px 12px;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #111;
+        color: white;
+        font-size: 16px;
+      }
+      #cancelBtn {
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #eee;
+        color: #111;
+        font-size: 16px;
+      }
+      #confirmBtn:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+      #endpointError {
+        margin-top: 8px;
+        color: #b00020;
+        font-size: 13px;
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="reader"></div>
+
+    <!-- Overlay -->
+    <div id="overlay">
+      <div id="overlayCard">
+        <div><strong>Scanned data</strong></div>
+        <div id="overlayData">—</div>
+        <div id="overlayActions">
+          <button id="confirmBtn" type="button">Confirm</button>
+          <button id="cancelBtn" type="button">Cancel</button>
+        </div>
+        <div id="endpointError">Missing endpoint parameter.</div>
+      </div>
+    </div>
+
+    <script>
+      // DOM REFERENCES
+      const overlay = document.getElementById("overlay");
+      const overlayData = document.getElementById("overlayData");
+      const confirmBtn = document.getElementById("confirmBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
+      const endpointError = document.getElementById("endpointError");
+      const endpoint = new URLSearchParams(window.location.search).get(
+        "endpoint"
+      );
+
+      // QR SCANNER INSTANCE
+      const html5QrCode = new Html5Qrcode("reader");
+
+      // STATE
+      let lastDecodedText = null;
+      let showingOverlay = false;
+
+      // OVERLAY HELPERS
+      function showOverlay(text) {
+        showingOverlay = true;
+        lastDecodedText = text;
+        overlayData.textContent = text;
+        overlay.style.display = "flex";
+      }
+
+      function hideOverlay() {
+        overlay.style.display = "none";
+        overlayData.textContent = "—";
+        endpointError.style.display = "none";
+        lastDecodedText = null;
+        showingOverlay = false;
+      }
+
+      // RESUME OR RESTART SCANNING
+      async function resumeScanning() {
+        try {
+          html5QrCode.resume();
+        } catch (e) {
+          try {
+            await html5QrCode.stop();
+          } catch (_) {}
+          startScanning();
+        }
+      }
+
+      // START CAMERA SCANNING
+      async function startScanning() {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          async (decodedText) => {
+            // PREVENT REPEATED TRIGGERS
+            if (showingOverlay) return;
+
+            showOverlay(decodedText);
+
+            // PAUSE WHILE OVERLAY IS SHOWN (CAMERA STAYS ON)
+            try {
+              html5QrCode.pause(true);
+            } catch (e) {
+              // PAUSE MAY NOT BE SUPPORTED
+            }
+          },
+          (error) => {
+            // IGNORE SCAN FAILURES
+          }
+        );
+      }
+
+      // CONFIRM HANDLER
+      confirmBtn.addEventListener("click", async () => {
+        if (!endpoint) {
+          endpointError.style.display = "block";
+          return;
+        }
+
+        // POST DATA TO ENDPOINT
+        await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: lastDecodedText || "",
+        });
+
+        // HIDE OVERLAY AND RESUME SCANNING
+        hideOverlay();
+        resumeScanning();
+      });
+
+      // CANCEL HANDLER
+      cancelBtn.addEventListener("click", () => {
+        hideOverlay();
+        resumeScanning();
+      });
+
+      // DISABLE CONFIRM IF ENDPOINT IS MISSING
+      if (!endpoint) {
+        confirmBtn.disabled = true;
+      }
+
+      // BOOT
+      startScanning();
+    </script>
+  </body>
+</html>
