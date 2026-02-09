@@ -31,11 +31,16 @@ It uses the [`html5-qrcode`](https://github.com/mebjas/html5-qrcode) library via
 ## Query params
 
 - `endpoint` (required): webhook URL to POST to
-- Any other params are forwarded and appended to the webhook URL
+- `confirm` (optional, default `1`): set to `0` / `false` to skip the confirm screen and send immediately after scanning
+- Any other params are forwarded and appended to the webhook URL (except `confirm`, which is only used by the scanner)
 
 Example:
 
 https://loqode.github.io/Glide-QR-Scanner?endpoint=https://example.com/webhook&rowid=12345
+
+Skip confirmation:
+
+https://loqode.github.io/Glide-QR-Scanner?endpoint=https://example.com/webhook&confirm=0&rowid=12345
 
 ---
 
